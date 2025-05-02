@@ -19,7 +19,12 @@
   box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
 
   /* Animation setup */
-  transition: background-position 0.5s ease, transform 0.2s ease,
+
+  /* causes issues when dragging the itesm making it slow to respond due to the 0.2s delay onf animation
+  /* transition: background-position 0.5s ease, transform 0.2s ease,
+    box-shadow 0.2s ease; */
+
+  transition: background-position 0.5s ease, transform ease,
     box-shadow 0.2s ease;
 }
 

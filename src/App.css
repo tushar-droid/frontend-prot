@@ -24,4 +24,14 @@ body {
   height: 100vh;
   position: relative;
   overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.main-container-center,
+.main-container-left,
+.main-container-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

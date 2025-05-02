@@ -18,4 +18,5 @@ export const itemList = [
   "Camera",
   "Spoon",
   "Phone",
+  "Mountains",
 ];

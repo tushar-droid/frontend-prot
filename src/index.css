@@ -1,0 +1,8 @@
+html,
+body,
+#root,
+.background,
+* {
+  /* cursor: pointer !important; */
+  cursor: url("../src/assets/arrowhead.png"), auto;
+}

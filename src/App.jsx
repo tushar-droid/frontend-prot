@@ -26,12 +26,15 @@ function App() {
 
   const dragEnd = (event) => {
     const { active, over } = event;
+
     if (!over) {
       if (droppedItems.includes(active.id)) {
         setDroppedItems((items) => items.filter((item) => item != active.id));
-        if (initialLeftList.current.has(active.id))
+        if (initialLeftList.current.has(active.id)) {
+          console.log("Moved to Left: ", active);
+
           setLeftList((items) => [...items, active.id]);
-        else setRightList((items) => [...items, active.id]);
+        } else setRightList((items) => [...items, active.id]);
       }
       setActiveId(null);
       return;

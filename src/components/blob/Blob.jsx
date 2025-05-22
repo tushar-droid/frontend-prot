@@ -55,16 +55,33 @@ const Blob = (props) => {
   };
   useEffect(() => {
     console.log("ran");
-    const state = Flip.getState(".drag-item");
-    animationToRunOnObjectDrop();
-    requestAnimationFrame(() => {
-      //After change
-      Flip.from(state, {
-        duration: 0.6,
-        ease: "power2.inOut",
+    const elements = document.querySelectorAll("#drop-item .drag-item");
+    if (elements.length > 0) {
+      const state = Flip.getState(elements);
+      animationToRunOnObjectDrop();
+      requestAnimationFrame(() => {
+        Flip.from(state, {
+          duration: 0.6,
+          ease: "power2.inOut",
+        });
       });
-    });
+    } else {
+      animationToRunOnObjectDrop();
+    }
   }, [Object.keys(props.children).length]);
+
+  // useEffect(() => {
+  //   const state = Flip.getState(".drag-item");
+  //   animationToRunOnObjectDrop();
+
+  //   requestAnimationFrame(() => {
+  //     //After change
+  //     Flip.from(state, {
+  //       duration: 0.6,
+  //       ease: "power2.inOut",
+  //     });
+  //   });
+  // }, [Object.keys(props.children).length]);
 
   return (
     <div className="blob-container">

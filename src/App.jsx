@@ -30,10 +30,7 @@ function App() {
 
   const dragEnd = (event) => {
     const { active, over } = event;
-    if (droppedItems.length == 5) {
-      setShowToast(true);
-      return;
-    }
+
     if (!over) {
       if (droppedItems.includes(active.id)) {
         setDroppedItems((items) => items.filter((item) => item != active.id));
@@ -44,6 +41,10 @@ function App() {
       setActiveId(null);
       return;
     } else if (over.id == "drop-item") {
+      if (droppedItems.length == 5) {
+        setShowToast(true);
+        return;
+      }
       if (leftList.includes(active.id)) {
         setLeftList((items) => items.filter((item) => item != active.id));
         setDroppedItems((items) => [...items, active.id]);

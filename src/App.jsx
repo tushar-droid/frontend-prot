@@ -7,6 +7,7 @@ import { DndContext, DragOverlay } from "@dnd-kit/core";
 import ItemButtons from "./components/itemButtons/ItemButtons";
 import ResetButton from "./components/resetButton/ResetButton";
 import GenerateButton from "./components/generateButton/GenerateButton";
+import MaxLimitToast from "./components/MaxLimitToast/MaxLimitToast";
 
 function App() {
   const items = itemList;
@@ -22,19 +23,21 @@ function App() {
 
   const [droppedItems, setDroppedItems] = useState([]);
   const [activeId, setActiveId] = useState(null);
+  const [showToast, setShowToast] = useState(false);
   const dragStart = (event) => {
     setActiveId(event.active.id);
   };
 
   const dragEnd = (event) => {
     const { active, over } = event;
-
+    if (droppedItems.length == 5) {
+      setShowToast(true);
+      return;
+    }
     if (!over) {
       if (droppedItems.includes(active.id)) {
         setDroppedItems((items) => items.filter((item) => item != active.id));
         if (initialLeftList.current.has(active.id)) {
-          console.log("Moved to Left: ", active);
-
           setLeftList((items) => [...items, active.id]);
         } else setRightList((items) => [...items, active.id]);
       }
@@ -53,7 +56,16 @@ function App() {
   };
 
   const resetButtonHandler = () => {
-    console.log("Reset buttom clicked");
+    let leftItems = [];
+    let rightItems = [];
+    droppedItems.forEach((item) => {
+      if (initialLeftList.current.has(item)) leftItems.push(item);
+      else rightItems.push(item);
+    });
+    setLeftList([...leftList, ...leftItems]);
+    setRightList([...rightList, ...rightItems]);
+    setDroppedItems([]);
+    return;
   };
 
   return (
@@ -70,6 +82,7 @@ function App() {
                 <ItemButtons key={index} itemName={item} />
               ))}
             </Blob>
+
             <GenerateButton />
           </div>
           <div className="main-container-right">
@@ -80,6 +93,7 @@ function App() {
           {activeId ? <ItemButtons itemName={activeId} /> : null}
         </DragOverlay>
       </DndContext>
+      <MaxLimitToast show={showToast} onClose={() => setShowToast(false)} />
     </>
   );
 }

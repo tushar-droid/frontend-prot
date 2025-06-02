@@ -5,7 +5,6 @@
     #ee0979 50%,
     #ff6a00 100%
   );
-
   background-size: 200% auto;
   width: 15rem;
   height: 6rem;
@@ -26,6 +25,7 @@
   overflow: hidden;
 }
 
+/* SVG icon */
 .reset-button svg {
   stroke: white;
   width: 28px;
@@ -33,7 +33,7 @@
   pointer-events: none;
 }
 
-/* ICON ANIMATION ON HOVER - counterclockwise spin */
+/* Icon hover spin */
 .reset-button .icon {
   display: inline-flex;
   transition: transform 0.6s ease;
@@ -43,14 +43,21 @@
   animation: reset-spin 0.6s ease-in-out;
 }
 
-/* BUTTON HOVER EFFECT - subtle shrink then bounce */
+/* Button hover bounce + glow */
 .reset-button:hover {
   animation: reset-pop 0.4s ease-in-out;
   background-position: right center;
   box-shadow: 0 8px 24px rgba(106, 17, 203, 0.6);
 }
 
-/* ICON spin backwards like a rewind */
+/* Press-down effect (click) */
+.reset-button:active {
+  transform: scale(0.9);
+  transition: transform 0.1s ease;
+  box-shadow: 0 0 30px #ff6a00;
+}
+
+/* Animations */
 @keyframes reset-spin {
   from {
     transform: rotate(0deg) scale(1);
@@ -60,7 +67,6 @@
   }
 }
 
-/* BUTTON reset pop animation */
 @keyframes reset-pop {
   0% {
     transform: scale(1);

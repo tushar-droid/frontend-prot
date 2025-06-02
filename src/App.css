@@ -22,7 +22,7 @@ body {
     linear-gradient(90deg, #292a30 0.1em, transparent 0.1em);
   background-size: 4em 4em;
   height: 100vh;
-  position: relative;
+
   overflow: auto;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

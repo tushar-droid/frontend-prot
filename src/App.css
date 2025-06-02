@@ -35,3 +35,9 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+.main-container-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}

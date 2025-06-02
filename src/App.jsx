@@ -5,6 +5,8 @@ import { itemList } from "./utilities/itemList";
 import OptionsContainer from "./components/optionsContainer/OptionsContainer";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import ItemButtons from "./components/itemButtons/ItemButtons";
+import ResetButton from "./components/resetButton/ResetButton";
+import GenerateButton from "./components/generateButton/GenerateButton";
 
 function App() {
   const items = itemList;
@@ -58,11 +60,13 @@ function App() {
             <OptionsContainer listItems={leftList} side="left" />
           </div>
           <div className="main-container-center">
+            <ResetButton />
             <Blob>
               {droppedItems.map((item, index) => (
                 <ItemButtons key={index} itemName={item} />
               ))}
             </Blob>
+            <GenerateButton />
           </div>
           <div className="main-container-right">
             <OptionsContainer listItems={rightList} side="right" />

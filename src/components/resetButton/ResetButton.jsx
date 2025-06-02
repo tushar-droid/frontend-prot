@@ -1,8 +1,8 @@
 import React from "react";
 import "./ResetButton.css";
-const ResetButton = () => {
+const ResetButton = ({ resetButtonHandler }) => {
   return (
-    <button className="reset-button">
+    <button className="reset-button" onClick={resetButtonHandler}>
       <span className="icon" aria-hidden="true">
         <svg
           xmlns="http://www.w3.org/2000/svg"

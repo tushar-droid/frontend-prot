@@ -52,6 +52,10 @@ function App() {
     setActiveId(null);
   };
 
+  const resetButtonHandler = () => {
+    console.log("Reset buttom clicked");
+  };
+
   return (
     <>
       <DndContext onDragStart={dragStart} onDragEnd={dragEnd}>
@@ -60,7 +64,7 @@ function App() {
             <OptionsContainer listItems={leftList} side="left" />
           </div>
           <div className="main-container-center">
-            <ResetButton />
+            <ResetButton resetButtonHandler={resetButtonHandler} />
             <Blob>
               {droppedItems.map((item, index) => (
                 <ItemButtons key={index} itemName={item} />

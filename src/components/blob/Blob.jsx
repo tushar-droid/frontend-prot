@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./blob.css";
+
 import { useDroppable } from "@dnd-kit/core";
 import { gsap } from "gsap";
 import Flip from "gsap/Flip";
@@ -54,7 +55,6 @@ const Blob = (props) => {
     setGrid(temp);
   };
   useEffect(() => {
-    console.log("ran");
     const elements = document.querySelectorAll("#drop-item .drag-item");
     if (elements.length > 0) {
       const state = Flip.getState(elements);

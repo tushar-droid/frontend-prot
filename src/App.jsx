@@ -8,6 +8,7 @@ import ItemButtons from "./components/itemButtons/ItemButtons";
 import ResetButton from "./components/resetButton/ResetButton";
 import GenerateButton from "./components/generateButton/GenerateButton";
 import MaxLimitToast from "./components/MaxLimitToast/MaxLimitToast";
+import Overlay from "./components/overlay/Overlay";
 
 function App() {
   const items = itemList;
@@ -95,6 +96,7 @@ function App() {
         </DragOverlay>
       </DndContext>
       <MaxLimitToast show={showToast} onClose={() => setShowToast(false)} />
+      <Overlay />
     </>
   );
 }

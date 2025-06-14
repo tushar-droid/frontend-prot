@@ -10,7 +10,7 @@ export const itemList = [
   "Bicycle",
   "Pen",
   "Hat",
-  "Glasses",
+  "Glass",
   "Plant",
   "Keyboard",
   "Mug",

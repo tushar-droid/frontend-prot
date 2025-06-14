@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./overlay.css";
-
+import OpenAI from "openai";
 const frames = [
   "../src/assets/loadingIcons/loadingImage1.png",
   "../src/assets/loadingIcons/loadingImage2.png",
@@ -37,7 +37,11 @@ const tips = [
   "Employ AI for data analysis and insights.",
 ];
 
-export default function Overlay({ showOverlay, closeOverlay }) {
+export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
+  const openai = new OpenAI({
+    apiKey: import.meta.env.VITE_OPEN_API_KEY,
+    dangerouslyAllowBrowser: true,
+  });
   // State to manage the current frame index for the loading animation
   const [frameIndex, setFrameIndex] = useState(0);
   // State to manage the current tip index for cycling tips
@@ -131,6 +135,65 @@ export default function Overlay({ showOverlay, closeOverlay }) {
       setBgAnimation("");
     }
   };
+
+  useEffect(() => {
+    // Define an async function inside useEffect
+    const generateImage = async () => {
+      if (showOverlay && selectedItems.length > 0) {
+        // Added check for selectedItems
+        let prompt = `A highly detailed, photorealistic image featuring: `;
+        const itemCount = selectedItems.length;
+        const numberOfImages = 1;
+        const imageSize = "1024x1024";
+
+        if (itemCount === 1) {
+          prompt += `a single **${selectedItems[0]}**. The item should be prominently displayed on a clean, minimalist background, with natural light highlighting its textures and form.`;
+        } else if (itemCount === 2) {
+          prompt += `a **${selectedItems[0]}** and a **${selectedItems[1]}** creatively interacting in a well-lit indoor setting. Focus on their relationship and composition within the frame.`;
+        } else if (itemCount >= 3 && itemCount <= 5) {
+          // Join the items with commas, and "and" for the last one
+          const formattedItems = selectedItems
+            .map((item, index) => {
+              if (
+                index === selectedItems.length - 1 &&
+                selectedItems.length > 1
+              ) {
+                return `and a **${item}**`;
+              }
+              return `a **${item}**`;
+            })
+            .join(", ");
+
+          prompt += `${formattedItems}. These objects are arranged thoughtfully, bathed in soft, diffused light, creating a serene and inviting atmosphere. The composition should feel balanced and aesthetically pleasing.`;
+        } else {
+          // Optional: Handle cases where itemCount is 0 or > 5
+          prompt =
+            "A beautiful abstract image with a harmonious blend of colors and soft lighting, inviting contemplation.";
+        }
+
+        console.log("Generated Prompt:", prompt);
+
+        try {
+          // Make the API call
+          const imageGenerationResponse = await openai.images.generate({
+            prompt: prompt,
+            n: numberOfImages,
+            size: imageSize,
+          });
+
+          console.log("Image Generation Data:", imageGenerationResponse.data);
+          const imageURL = imageGenerationResponse.data[0].url;
+          console.log(imageURL);
+        } catch (error) {
+          console.error("Error generating image:", error);
+          // Handle the error, e.g., show an error message to the user
+        }
+      }
+    };
+
+    // Call the async function when showOverlay changes
+    generateImage();
+  }, [showOverlay]);
 
   return (
     <>

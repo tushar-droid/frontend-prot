@@ -102,7 +102,11 @@ function App() {
         </DragOverlay>
       </DndContext>
       <MaxLimitToast show={showToast} onClose={() => setShowToast(false)} />
-      <Overlay showOverlay={showOverlay} closeOverlay={toggleOverlay} />
+      <Overlay
+        showOverlay={showOverlay}
+        closeOverlay={toggleOverlay}
+        selectedItems={droppedItems}
+      />
     </>
   );
 }

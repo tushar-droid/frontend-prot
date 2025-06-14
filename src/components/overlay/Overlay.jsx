@@ -42,10 +42,15 @@ export default function Overlay({ showOverlay, closeOverlay }) {
   const [frameIndex, setFrameIndex] = useState(0);
   // State to manage the current tip index for cycling tips
   const [tipIndex, setTipIndex] = useState(0);
+  const [overlayAnimation, setOverlayAnimation] = useState("zoomOut");
+  const [bgAnimation, setBgAnimation] = useState(null);
+
+  const [isVisible, setIsVisible] = useState(false);
 
   // useRef to get direct access to the DOM elements for animation
   const imgRef = useRef(null);
   const tipRef = useRef(null);
+  const overlayCenter = useRef(null);
 
   // useEffect hook to handle side effects: setting up and clearing intervals
   useEffect(() => {
@@ -106,13 +111,40 @@ export default function Overlay({ showOverlay, closeOverlay }) {
   // Functional state updates handle the latest state values within the intervals,
   // preventing stale closures without needing to re-run the effect.
 
+  useEffect(() => {
+    if (showOverlay) {
+      setIsVisible(true);
+      setOverlayAnimation("zoomIn");
+      setBgAnimation("fadeIn");
+    } else {
+      if (isVisible) {
+        setOverlayAnimation("zoomOut");
+        setBgAnimation("fadeOut");
+      }
+    }
+  }, [showOverlay]);
+
+  const handleAnimationEnd = (e) => {
+    if (e.animationName === "zoomOut") {
+      setIsVisible(false);
+      setOverlayAnimation("");
+      setBgAnimation("");
+    }
+  };
+
   return (
     <>
       {/* Conditionally render the overlay based on showOverlay prop */}
-      {showOverlay ? (
-        <div className="overlay">
+      {isVisible ? (
+        <div
+          className={`overlay ${bgAnimation}`}
+          onAnimationEnd={handleAnimationEnd}
+        >
           {/* Container for centering content */}
-          <div className="overlay-center">
+          <div
+            className={`overlay-center ${overlayAnimation}`}
+            ref={overlayCenter}
+          >
             {/* Close button for the overlay */}
             <button onClick={closeOverlay} className="closeButton">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
@@ -151,93 +183,3 @@ export default function Overlay({ showOverlay, closeOverlay }) {
     </>
   );
 }
-
-// export default function Overlay({ showOverlay, closeOverlay }) {
-//   const [frameIndex, setFrameIndex] = useState(0);
-//   const [tipIndex, setTipIndex] = useState(0);
-
-//   const imgRef = useRef(null);
-//   const tipRef = useRef(null);
-
-//   useEffect(() => {
-//     const frameInterval = setInterval(() => {
-//       const img = imgRef.current;
-//       if (!img) return;
-
-//       // Step 1: animate out
-//       img.style.opacity = 0;
-//       img.style.transform = "scale(0) rotate(-5deg)";
-
-//       // Step 2: wait for animation, then switch
-//       setTimeout(() => {
-//         const newIndex = (frameIndex + 1) % frames.length;
-//         img.src = frames[newIndex];
-//         setFrameIndex(newIndex);
-
-//         // Force reflow
-//         void img.offsetWidth;
-
-//         // Animate in
-//         img.style.transform = "scale(1) rotate(0deg)";
-//         img.style.opacity = 1;
-//       }, 500);
-//     }, 1800);
-
-//     const tipInterval = setInterval(() => {
-//       const tipEl = tipRef.current;
-//       if (!tipEl) return;
-
-//       tipEl.style.opacity = 0;
-//       setTimeout(() => {
-//         const newTip = (tipIndex + 1) % tips.length;
-//         setTipIndex(newTip);
-//         tipEl.textContent = tips[newTip];
-//         tipEl.style.opacity = 1;
-//       }, 500);
-//     }, 4000);
-
-//     return () => {
-//       clearInterval(frameInterval);
-//       clearInterval(tipInterval);
-//     };
-//   }, [frameIndex, tipIndex]);
-
-//   return (
-//     <>
-//       {showOverlay ? (
-//         <div className="overlay">
-//           <div className="overlay-center">
-//             <button onClick={closeOverlay} className="closeButton">
-//               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-//                 <path
-//                   d="M6 6L18 18"
-//                   stroke="#fff"
-//                   strokeWidth="2"
-//                   strokeLinecap="round"
-//                 />
-//                 <path
-//                   d="M6 18L18 6"
-//                   stroke="#fff"
-//                   strokeWidth="2"
-//                   strokeLinecap="round"
-//                 />
-//               </svg>
-//             </button>
-
-//             <div className="loaderContainer">
-//               <img
-//                 ref={imgRef}
-//                 src={frames[0]}
-//                 alt="Loading..."
-//                 className="overlay-image"
-//               />
-//               <div ref={tipRef} className="tipText">
-//                 Tip: {tips[0]}
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       ) : null}
-//     </>
-//   );
-// }

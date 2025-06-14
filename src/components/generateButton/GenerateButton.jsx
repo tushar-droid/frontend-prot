@@ -1,9 +1,13 @@
 import React from "react";
 import "./GenerateButton.css";
 
-const GenerateButton = () => {
+const GenerateButton = ({ clickHandler }) => {
   return (
-    <button className="generate-button" aria-label="Generate">
+    <button
+      className="generate-button"
+      aria-label="Generate"
+      onClick={clickHandler}
+    >
       Generate
       <svg
         className="icon"

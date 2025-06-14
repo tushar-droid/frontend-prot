@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-
-// const frames = [
-//   "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-SOLVYVeoYFcQ9plseLjBvBDdFCL4qu.png&w=1920&q=75",
-//   "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-adD99QtxVE5zK0oRmUbkC7gswNoLNX.png&w=1920&q=75",
-//   "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-1BHTtY4fyRPXbePgUm5lTCWVMxty00.png&w=3840&q=75",
-//   "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-wtyoroPu9pUAx5xLx8Cnko454idKhb.png&w=3840&q=75",
-//   "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-UfQ45n5MHPKpqHL7MANj5XfaOsbVtX.png&w=3840&q=75",
-//   "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-LxbDZUY1gzuzF4AEv0OHAqsSGpAng8.png&w=3840&q=75",
-// ];
+import "./overlay.css";
 
 const frames = [
   "../src/assets/loadingIcons/loadingImage1.png",
@@ -24,6 +16,17 @@ const frames = [
   "../src/assets/loadingIcons/loadingImage12.png",
   "../src/assets/loadingIcons/loadingImage13.png",
   "../src/assets/loadingIcons/loadingImage14.png",
+  "../src/assets/loadingIcons/loadingImage15.png",
+  "../src/assets/loadingIcons/loadingImage16.png",
+  "../src/assets/loadingIcons/loadingImage17.png",
+  "../src/assets/loadingIcons/loadingImage18.png",
+  "../src/assets/loadingIcons/loadingImage19.png",
+  "../src/assets/loadingIcons/loadingImage20.png",
+  "../src/assets/loadingIcons/loadingImage21.png",
+  "../src/assets/loadingIcons/loadingImage22.png",
+  "../src/assets/loadingIcons/loadingImage23.png",
+  "../src/assets/loadingIcons/loadingImage24.png",
+  "../src/assets/loadingIcons/loadingImage25.png",
 ];
 
 const tips = [
@@ -34,142 +37,207 @@ const tips = [
   "Employ AI for data analysis and insights.",
 ];
 
-export default function Overlay() {
+export default function Overlay({ showOverlay, closeOverlay }) {
+  // State to manage the current frame index for the loading animation
   const [frameIndex, setFrameIndex] = useState(0);
+  // State to manage the current tip index for cycling tips
   const [tipIndex, setTipIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
 
+  // useRef to get direct access to the DOM elements for animation
   const imgRef = useRef(null);
   const tipRef = useRef(null);
 
+  // useEffect hook to handle side effects: setting up and clearing intervals
   useEffect(() => {
+    // Interval for cycling through image frames
     const frameInterval = setInterval(() => {
       const img = imgRef.current;
+      // If image ref is not available, exit
       if (!img) return;
 
-      // Step 1: animate out
+      // Step 1: Animate out the current image
       img.style.opacity = 0;
       img.style.transform = "scale(0) rotate(-5deg)";
 
-      // Step 2: wait for animation, then switch
+      // Step 2: Wait for the "animate out" transition, then switch image source
       setTimeout(() => {
-        const newIndex = (frameIndex + 1) % frames.length;
-        img.src = frames[newIndex];
-        setFrameIndex(newIndex);
+        // Calculate the next frame index using functional update
+        setFrameIndex((prevIndex) => {
+          const newIndex = (prevIndex + 1) % frames.length;
+          // Directly update image source for immediate visual change within the animation
+          img.src = frames[newIndex];
+          return newIndex; // Return the new index to update state
+        });
 
-        // Force reflow
+        // Force reflow to ensure CSS transitions re-apply correctly
         void img.offsetWidth;
 
-        // Animate in
+        // Animate in the new image
         img.style.transform = "scale(1) rotate(0deg)";
         img.style.opacity = 1;
-      }, 500);
-    }, 1800);
+      }, 500); // This timeout should match the transition duration for smooth animation
+    }, 1800); // Interval for overall frame animation cycle
 
+    // Interval for cycling through tips
     const tipInterval = setInterval(() => {
       const tipEl = tipRef.current;
+      // If tip ref is not available, exit
       if (!tipEl) return;
 
+      // Animate out the current tip text
       tipEl.style.opacity = 0;
       setTimeout(() => {
-        const newTip = (tipIndex + 1) % tips.length;
-        setTipIndex(newTip);
-        tipEl.textContent = tips[newTip];
-        tipEl.style.opacity = 1;
-      }, 500);
-    }, 4000);
+        // Update the tip index using functional update
+        setTipIndex((prevTipIndex) => {
+          const newTip = (prevTipIndex + 1) % tips.length;
+          return newTip; // Return the new index to update state
+        });
+        // The tip text will automatically update via JSX rendering because tipIndex state changed
+        tipEl.style.opacity = 1; // Animate in the new tip text
+      }, 500); // This timeout should match the transition duration for smooth animation
+    }, 4000); // Interval for overall tip cycle
 
+    // Cleanup function: Clear intervals when the component unmounts or effect re-runs
     return () => {
       clearInterval(frameInterval);
       clearInterval(tipInterval);
     };
-  }, [frameIndex, tipIndex]);
-
-  if (!visible) return null;
+  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount.
+  // Functional state updates handle the latest state values within the intervals,
+  // preventing stale closures without needing to re-run the effect.
 
   return (
-    <div style={styles.overlay}>
-      <button onClick={() => setVisible(false)} style={styles.closeButton}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M6 6L18 18"
-            stroke="#fff"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <path
-            d="M6 18L18 6"
-            stroke="#fff"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-      </button>
+    <>
+      {/* Conditionally render the overlay based on showOverlay prop */}
+      {showOverlay ? (
+        <div className="overlay">
+          {/* Container for centering content */}
+          <div className="overlay-center">
+            {/* Close button for the overlay */}
+            <button onClick={closeOverlay} className="closeButton">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M6 6L18 18"
+                  stroke="#fff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M6 18L18 6"
+                  stroke="#fff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
 
-      <div style={styles.loaderContainer}>
-        <img
-          ref={imgRef}
-          src={frames[0]}
-          alt="Loading..."
-          style={styles.image}
-        />
-        <div ref={tipRef} style={styles.tipText}>
-          Tip: {tips[0]}
+            {/* Container for the loader animation and tip text */}
+            <div className="loaderContainer">
+              {/* Image element for the loading animation, src is controlled by state */}
+              <img
+                ref={imgRef}
+                src={frames[frameIndex]}
+                alt="Loading..."
+                className="overlay-image"
+              />
+              {/* Tip text element, content is controlled by state */}
+              <div ref={tipRef} className="tipText">
+                Tip: {tips[tipIndex]} {/* Now dynamically uses tipIndex */}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      ) : null}
+    </>
   );
 }
 
-const styles = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    zIndex: 9999,
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  closeButton: {
-    position: "absolute",
-    top: 20,
-    right: 20,
-    background: "transparent",
-    border: "none",
-    cursor: "pointer",
-    padding: 0,
-  },
-  loaderContainer: {
-    width: 180,
-    userSelect: "none",
-    textAlign: "center",
-  },
-  image: {
-    width: "100%",
-    height: 150,
-    objectFit: "contain",
-    // filter: "drop-shadow(0 0 12px #00bcd4)",
-    transition:
-      "opacity 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
-    opacity: 1,
-    transform: "scale(1) rotate(0deg)",
-    overflow: visible,
-  },
-  tipText: {
-    marginTop: 12,
-    fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif",
-    fontWeight: 500,
-    fontSize: 14,
-    color: "#E0E6F1",
-    letterSpacing: "0.05em",
-    minHeight: 24,
-    lineHeight: 1.3,
-    fontStyle: "normal",
-    userSelect: "none",
-    transition: "opacity 0.5s ease-in-out",
-  },
-};
+// export default function Overlay({ showOverlay, closeOverlay }) {
+//   const [frameIndex, setFrameIndex] = useState(0);
+//   const [tipIndex, setTipIndex] = useState(0);
+
+//   const imgRef = useRef(null);
+//   const tipRef = useRef(null);
+
+//   useEffect(() => {
+//     const frameInterval = setInterval(() => {
+//       const img = imgRef.current;
+//       if (!img) return;
+
+//       // Step 1: animate out
+//       img.style.opacity = 0;
+//       img.style.transform = "scale(0) rotate(-5deg)";
+
+//       // Step 2: wait for animation, then switch
+//       setTimeout(() => {
+//         const newIndex = (frameIndex + 1) % frames.length;
+//         img.src = frames[newIndex];
+//         setFrameIndex(newIndex);
+
+//         // Force reflow
+//         void img.offsetWidth;
+
+//         // Animate in
+//         img.style.transform = "scale(1) rotate(0deg)";
+//         img.style.opacity = 1;
+//       }, 500);
+//     }, 1800);
+
+//     const tipInterval = setInterval(() => {
+//       const tipEl = tipRef.current;
+//       if (!tipEl) return;
+
+//       tipEl.style.opacity = 0;
+//       setTimeout(() => {
+//         const newTip = (tipIndex + 1) % tips.length;
+//         setTipIndex(newTip);
+//         tipEl.textContent = tips[newTip];
+//         tipEl.style.opacity = 1;
+//       }, 500);
+//     }, 4000);
+
+//     return () => {
+//       clearInterval(frameInterval);
+//       clearInterval(tipInterval);
+//     };
+//   }, [frameIndex, tipIndex]);
+
+//   return (
+//     <>
+//       {showOverlay ? (
+//         <div className="overlay">
+//           <div className="overlay-center">
+//             <button onClick={closeOverlay} className="closeButton">
+//               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+//                 <path
+//                   d="M6 6L18 18"
+//                   stroke="#fff"
+//                   strokeWidth="2"
+//                   strokeLinecap="round"
+//                 />
+//                 <path
+//                   d="M6 18L18 6"
+//                   stroke="#fff"
+//                   strokeWidth="2"
+//                   strokeLinecap="round"
+//                 />
+//               </svg>
+//             </button>
+
+//             <div className="loaderContainer">
+//               <img
+//                 ref={imgRef}
+//                 src={frames[0]}
+//                 alt="Loading..."
+//                 className="overlay-image"
+//               />
+//               <div ref={tipRef} className="tipText">
+//                 Tip: {tips[0]}
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       ) : null}
+//     </>
+//   );
+// }

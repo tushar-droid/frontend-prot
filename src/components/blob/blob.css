@@ -13,8 +13,10 @@
 .blob {
   background-image: linear-gradient(120deg, #34e0f0 0%, #b400ff 100%);
   border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
-  width: 45rem;
-  height: 45rem;
+  /* width: 45rem;
+  height: 45rem; */
+  width: 20vw;
+  height: 40vh;
   animation: morph 6s ease-in-out infinite,
     gradientShift 8s ease-in-out infinite;
   transform-style: preserve-3d;

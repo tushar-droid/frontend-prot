@@ -25,6 +25,7 @@ function App() {
   const [droppedItems, setDroppedItems] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [showToast, setShowToast] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
   const dragStart = (event) => {
     setActiveId(event.active.id);
   };
@@ -70,6 +71,11 @@ function App() {
     return;
   };
 
+  const toggleOverlay = () => {
+    if (showOverlay) setShowOverlay(false);
+    else setShowOverlay(true);
+  };
+
   return (
     <>
       <DndContext onDragStart={dragStart} onDragEnd={dragEnd}>
@@ -85,7 +91,7 @@ function App() {
               ))}
             </Blob>
 
-            <GenerateButton />
+            <GenerateButton clickHandler={toggleOverlay} />
           </div>
           <div className="main-container-right">
             <OptionsContainer listItems={rightList} side="right" />
@@ -96,7 +102,7 @@ function App() {
         </DragOverlay>
       </DndContext>
       <MaxLimitToast show={showToast} onClose={() => setShowToast(false)} />
-      <Overlay />
+      <Overlay showOverlay={showOverlay} closeOverlay={toggleOverlay} />
     </>
   );
 }

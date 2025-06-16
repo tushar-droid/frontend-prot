@@ -39,7 +39,7 @@ const tips = [
 
 export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
   const openai = new OpenAI({
-    apiKey: import.meta.env.VITE_OPEN_API_KEY,
+    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
     dangerouslyAllowBrowser: true,
   });
   // State to manage the current frame index for the loading animation
@@ -48,13 +48,15 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
   const [tipIndex, setTipIndex] = useState(0);
   const [overlayAnimation, setOverlayAnimation] = useState("zoomOut");
   const [bgAnimation, setBgAnimation] = useState(null);
-
   const [isVisible, setIsVisible] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // useRef to get direct access to the DOM elements for animation
   const imgRef = useRef(null);
   const tipRef = useRef(null);
   const overlayCenter = useRef(null);
+  const temp = useRef(null);
 
   // useEffect hook to handle side effects: setting up and clearing intervals
   useEffect(() => {
@@ -141,6 +143,8 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
     const generateImage = async () => {
       if (showOverlay && selectedItems.length > 0) {
         // Added check for selectedItems
+        setImageLoaded(false);
+        setGeneratedImage(null);
         let prompt = `A highly detailed, photorealistic image featuring: `;
         const itemCount = selectedItems.length;
         const numberOfImages = 1;
@@ -184,6 +188,10 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
           console.log("Image Generation Data:", imageGenerationResponse.data);
           const imageURL = imageGenerationResponse.data[0].url;
           console.log(imageURL);
+          await preloadImage(imageURL);
+          temp.current = imageURL;
+          setGeneratedImage(true);
+          setImageLoaded(true);
         } catch (error) {
           console.error("Error generating image:", error);
           // Handle the error, e.g., show an error message to the user
@@ -194,6 +202,20 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
     // Call the async function when showOverlay changes
     generateImage();
   }, [showOverlay]);
+  const preloadImage = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(url);
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
+
+  useEffect(() => {
+    if (!isVisible) {
+      setGeneratedImage(null);
+    }
+  }, [isVisible]);
 
   return (
     <>
@@ -226,20 +248,28 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
               </svg>
             </button>
 
-            {/* Container for the loader animation and tip text */}
-            <div className="loaderContainer">
-              {/* Image element for the loading animation, src is controlled by state */}
-              <img
-                ref={imgRef}
-                src={frames[frameIndex]}
-                alt="Loading..."
-                className="overlay-image"
-              />
-              {/* Tip text element, content is controlled by state */}
-              <div ref={tipRef} className="tipText">
-                Tip: {tips[tipIndex]} {/* Now dynamically uses tipIndex */}
+            {generatedImage && imageLoaded ? (
+              <div className="generated-image-container">
+                <img
+                  src={temp ? temp.current : null}
+                  className="generated-image"
+                />
               </div>
-            </div>
+            ) : (
+              <div className="loaderContainer">
+                {/* Image element for the loading animation, src is controlled by state */}
+                <img
+                  ref={imgRef}
+                  src={frames[frameIndex]}
+                  alt="Loading..."
+                  className="overlay-image"
+                />
+                {/* Tip text element, content is controlled by state */}
+                <div ref={tipRef} className="tipText">
+                  Tip: {tips[tipIndex]} {/* Now dynamically uses tipIndex */}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ) : null}

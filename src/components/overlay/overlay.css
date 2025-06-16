@@ -66,6 +66,15 @@
   position: relative;
 }
 
+.generated-image-container {
+  height: 60vh;
+  width: 30vw;
+}
+
+.generated-image {
+  height: 100%;
+  width: 100%;
+}
 @keyframes zoomIn {
   from {
     opacity: 0;

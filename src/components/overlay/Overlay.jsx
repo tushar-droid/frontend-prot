@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./overlay.css";
 import OpenAI from "openai";
+
 const frames = [
   "../src/assets/loadingIcons/loadingImage1.png",
   "../src/assets/loadingIcons/loadingImage2.png",
@@ -42,9 +43,8 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
     apiKey: import.meta.env.VITE_OPENAI_API_KEY,
     dangerouslyAllowBrowser: true,
   });
-  // State to manage the current frame index for the loading animation
+
   const [frameIndex, setFrameIndex] = useState(0);
-  // State to manage the current tip index for cycling tips
   const [tipIndex, setTipIndex] = useState(0);
   const [overlayAnimation, setOverlayAnimation] = useState("zoomOut");
   const [bgAnimation, setBgAnimation] = useState(null);
@@ -52,70 +52,52 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
   const [generatedImage, setGeneratedImage] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // useRef to get direct access to the DOM elements for animation
   const imgRef = useRef(null);
   const tipRef = useRef(null);
   const overlayCenter = useRef(null);
   const temp = useRef(null);
 
-  // useEffect hook to handle side effects: setting up and clearing intervals
   useEffect(() => {
-    // Interval for cycling through image frames
     const frameInterval = setInterval(() => {
       const img = imgRef.current;
-      // If image ref is not available, exit
       if (!img) return;
 
-      // Step 1: Animate out the current image
       img.style.opacity = 0;
       img.style.transform = "scale(0) rotate(-5deg)";
 
-      // Step 2: Wait for the "animate out" transition, then switch image source
       setTimeout(() => {
-        // Calculate the next frame index using functional update
         setFrameIndex((prevIndex) => {
           const newIndex = (prevIndex + 1) % frames.length;
-          // Directly update image source for immediate visual change within the animation
           img.src = frames[newIndex];
-          return newIndex; // Return the new index to update state
+          return newIndex;
         });
 
-        // Force reflow to ensure CSS transitions re-apply correctly
         void img.offsetWidth;
 
-        // Animate in the new image
         img.style.transform = "scale(1) rotate(0deg)";
         img.style.opacity = 1;
-      }, 500); // This timeout should match the transition duration for smooth animation
-    }, 1800); // Interval for overall frame animation cycle
+      }, 500);
+    }, 1800);
 
-    // Interval for cycling through tips
     const tipInterval = setInterval(() => {
       const tipEl = tipRef.current;
-      // If tip ref is not available, exit
       if (!tipEl) return;
 
-      // Animate out the current tip text
       tipEl.style.opacity = 0;
       setTimeout(() => {
-        // Update the tip index using functional update
         setTipIndex((prevTipIndex) => {
           const newTip = (prevTipIndex + 1) % tips.length;
-          return newTip; // Return the new index to update state
+          return newTip;
         });
-        // The tip text will automatically update via JSX rendering because tipIndex state changed
-        tipEl.style.opacity = 1; // Animate in the new tip text
-      }, 500); // This timeout should match the transition duration for smooth animation
-    }, 4000); // Interval for overall tip cycle
+        tipEl.style.opacity = 1;
+      }, 500);
+    }, 4000);
 
-    // Cleanup function: Clear intervals when the component unmounts or effect re-runs
     return () => {
       clearInterval(frameInterval);
       clearInterval(tipInterval);
     };
-  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount.
-  // Functional state updates handle the latest state values within the intervals,
-  // preventing stale closures without needing to re-run the effect.
+  }, []);
 
   useEffect(() => {
     if (showOverlay) {
@@ -138,13 +120,33 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
     }
   };
 
+  // Function to preload the image and wait for it to load
+  const preloadImage = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        reject(new Error("Image load timeout"));
+      }, 10000); // 10 second timeout
+
+      img.onload = () => {
+        clearTimeout(timeout);
+        resolve(url);
+      };
+      img.onerror = () => {
+        clearTimeout(timeout);
+        reject(new Error("Image failed to load"));
+      };
+      img.src = url;
+    });
+  };
+
   useEffect(() => {
-    // Define an async function inside useEffect
     const generateImage = async () => {
       if (showOverlay && selectedItems.length > 0) {
-        // Added check for selectedItems
-        setImageLoaded(false);
+        // Reset states when starting new generation
         setGeneratedImage(null);
+        setImageLoaded(false);
+
         let prompt = `A highly detailed, photorealistic image featuring: `;
         const itemCount = selectedItems.length;
         const numberOfImages = 1;
@@ -155,7 +157,6 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
         } else if (itemCount === 2) {
           prompt += `a **${selectedItems[0]}** and a **${selectedItems[1]}** creatively interacting in a well-lit indoor setting. Focus on their relationship and composition within the frame.`;
         } else if (itemCount >= 3 && itemCount <= 5) {
-          // Join the items with commas, and "and" for the last one
           const formattedItems = selectedItems
             .map((item, index) => {
               if (
@@ -170,7 +171,6 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
 
           prompt += `${formattedItems}. These objects are arranged thoughtfully, bathed in soft, diffused light, creating a serene and inviting atmosphere. The composition should feel balanced and aesthetically pleasing.`;
         } else {
-          // Optional: Handle cases where itemCount is 0 or > 5
           prompt =
             "A beautiful abstract image with a harmonious blend of colors and soft lighting, inviting contemplation.";
         }
@@ -178,7 +178,6 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
         console.log("Generated Prompt:", prompt);
 
         try {
-          // Make the API call
           const imageGenerationResponse = await openai.images.generate({
             prompt: prompt,
             n: numberOfImages,
@@ -187,50 +186,49 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
 
           console.log("Image Generation Data:", imageGenerationResponse.data);
           const imageURL = imageGenerationResponse.data[0].url;
-          console.log(imageURL);
-          await preloadImage(imageURL);
-          temp.current = imageURL;
-          setGeneratedImage(true);
-          setImageLoaded(true);
+
+          try {
+            // Wait for the image to actually load before showing it
+            await preloadImage(imageURL);
+            console.log("Image preloaded successfully");
+            temp.current = imageURL;
+            setGeneratedImage(true);
+            setImageLoaded(true);
+          } catch (preloadError) {
+            console.error("Error preloading image:", preloadError);
+            // If preload fails, still try to show the image - let the browser handle it
+            temp.current = imageURL;
+            setGeneratedImage(true);
+            setImageLoaded(true);
+          }
         } catch (error) {
           console.error("Error generating image:", error);
-          // Handle the error, e.g., show an error message to the user
+          // Could add error state handling here if needed
         }
       }
     };
 
-    // Call the async function when showOverlay changes
     generateImage();
-  }, [showOverlay]);
-  const preloadImage = (url) => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(url);
-      img.onerror = reject;
-      img.src = url;
-    });
-  };
+  }, [showOverlay, selectedItems]); // Added selectedItems to dependencies
 
   useEffect(() => {
     if (!isVisible) {
       setGeneratedImage(null);
+      setImageLoaded(false);
     }
   }, [isVisible]);
 
   return (
     <>
-      {/* Conditionally render the overlay based on showOverlay prop */}
       {isVisible ? (
         <div
           className={`overlay ${bgAnimation}`}
           onAnimationEnd={handleAnimationEnd}
         >
-          {/* Container for centering content */}
           <div
             className={`overlay-center ${overlayAnimation}`}
             ref={overlayCenter}
           >
-            {/* Close button for the overlay */}
             <button onClick={closeOverlay} className="closeButton">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
                 <path
@@ -251,22 +249,21 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
             {generatedImage && imageLoaded ? (
               <div className="generated-image-container">
                 <img
-                  src={temp ? temp.current : null}
+                  src={temp.current}
                   className="generated-image"
+                  alt="Generated content"
                 />
               </div>
             ) : (
               <div className="loaderContainer">
-                {/* Image element for the loading animation, src is controlled by state */}
                 <img
                   ref={imgRef}
                   src={frames[frameIndex]}
                   alt="Loading..."
                   className="overlay-image"
                 />
-                {/* Tip text element, content is controlled by state */}
                 <div ref={tipRef} className="tipText">
-                  Tip: {tips[tipIndex]} {/* Now dynamically uses tipIndex */}
+                  Tip: {tips[tipIndex]}
                 </div>
               </div>
             )}

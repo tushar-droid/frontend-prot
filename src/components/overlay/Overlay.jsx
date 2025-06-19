@@ -49,15 +49,16 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
   const [overlayAnimation, setOverlayAnimation] = useState("zoomOut");
   const [bgAnimation, setBgAnimation] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [finalImageURL, setFinalImageURL] = useState(null); // New state for the final image URL
+  const [isLoadingImage, setIsLoadingImage] = useState(true); // Track if an image is being generated/loaded
 
   const imgRef = useRef(null);
   const tipRef = useRef(null);
   const overlayCenter = useRef(null);
-  const temp = useRef(null);
 
   useEffect(() => {
+    if (!isLoadingImage) return;
+
     const frameInterval = setInterval(() => {
       const img = imgRef.current;
       if (!img) return;
@@ -97,7 +98,7 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
       clearInterval(frameInterval);
       clearInterval(tipInterval);
     };
-  }, []);
+  }, [isLoadingImage]);
 
   useEffect(() => {
     if (showOverlay) {
@@ -126,7 +127,7 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
       const img = new Image();
       const timeout = setTimeout(() => {
         reject(new Error("Image load timeout"));
-      }, 10000); // 10 second timeout
+      }, 15000); // Increased timeout to 15 seconds for potentially large images
 
       img.onload = () => {
         clearTimeout(timeout);
@@ -143,9 +144,8 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
   useEffect(() => {
     const generateImage = async () => {
       if (showOverlay && selectedItems.length > 0) {
-        // Reset states when starting new generation
-        setGeneratedImage(null);
-        setImageLoaded(false);
+        setFinalImageURL(null); // Clear any previous image
+        setIsLoadingImage(true); // Indicate that we are loading
 
         let prompt = `A highly detailed, photorealistic image featuring: `;
         const itemCount = selectedItems.length;
@@ -188,33 +188,31 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
           const imageURL = imageGenerationResponse.data[0].url;
 
           try {
-            // Wait for the image to actually load before showing it
             await preloadImage(imageURL);
             console.log("Image preloaded successfully");
-            temp.current = imageURL;
-            setGeneratedImage(true);
-            setImageLoaded(true);
+            setFinalImageURL(imageURL); // Set the final image URL in state
           } catch (preloadError) {
             console.error("Error preloading image:", preloadError);
-            // If preload fails, still try to show the image - let the browser handle it
-            temp.current = imageURL;
-            setGeneratedImage(true);
-            setImageLoaded(true);
+            // If preload fails, still attempt to set the image, as the browser might load it eventually.
+            // This ensures the user isn't stuck on a loading screen indefinitely.
+            setFinalImageURL(imageURL);
           }
         } catch (error) {
           console.error("Error generating image:", error);
-          // Could add error state handling here if needed
+          // Handle API generation errors (e.g., display an error message to the user)
+        } finally {
+          setIsLoadingImage(false); // Generation/loading complete (or failed)
         }
       }
     };
 
     generateImage();
-  }, [showOverlay, selectedItems]); // Added selectedItems to dependencies
+  }, [showOverlay, selectedItems]);
 
   useEffect(() => {
     if (!isVisible) {
-      setGeneratedImage(null);
-      setImageLoaded(false);
+      setFinalImageURL(null); // Clear image when overlay is hidden
+      setIsLoadingImage(false); // Reset loading state
     }
   }, [isVisible]);
 
@@ -246,10 +244,11 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
               </svg>
             </button>
 
-            {generatedImage && imageLoaded ? (
+            {finalImageURL && !isLoadingImage ? ( // Render generated image when URL is present and not loading
               <div className="generated-image-container">
                 <img
-                  src={temp.current}
+                  src={finalImageURL}
+                  key="generated"
                   className="generated-image"
                   alt="Generated content"
                 />
@@ -258,6 +257,7 @@ export default function Overlay({ showOverlay, closeOverlay, selectedItems }) {
               <div className="loaderContainer">
                 <img
                   ref={imgRef}
+                  key="loader"
                   src={frames[frameIndex]}
                   alt="Loading..."
                   className="overlay-image"

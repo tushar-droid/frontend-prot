@@ -9,6 +9,7 @@ import ResetButton from "./components/resetButton/ResetButton";
 import GenerateButton from "./components/generateButton/GenerateButton";
 import MaxLimitToast from "./components/MaxLimitToast/MaxLimitToast";
 import Overlay from "./components/overlay/Overlay";
+import NoItemsDroppedToast from "./components/noItemsDroppedToast/NoItemsDroppedToast";
 
 function App() {
   const items = itemList;
@@ -25,6 +26,7 @@ function App() {
   const [droppedItems, setDroppedItems] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [showToast, setShowToast] = useState(false);
+  const [noItemsToast, setNoItemsToast] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const dragStart = (event) => {
     setActiveId(event.active.id);
@@ -44,7 +46,11 @@ function App() {
       return;
     } else if (over.id == "drop-item") {
       if (droppedItems.length == 5) {
-        setShowToast(true);
+        if (droppedItems.includes(active.id)) return;
+        else {
+          if (showToast) return;
+          else setShowToast(true);
+        }
         return;
       }
       if (leftList.includes(active.id)) {
@@ -72,6 +78,12 @@ function App() {
   };
 
   const toggleOverlay = () => {
+    if (droppedItems.length == 0) {
+      //error
+      if (noItemsToast) return;
+      setNoItemsToast(true);
+      return;
+    }
     if (showOverlay) setShowOverlay(false);
     else setShowOverlay(true);
   };
@@ -102,6 +114,11 @@ function App() {
         </DragOverlay>
       </DndContext>
       <MaxLimitToast show={showToast} onClose={() => setShowToast(false)} />
+      <NoItemsDroppedToast
+        show={noItemsToast}
+        onClose={() => setNoItemsToast(false)}
+      />
+
       <Overlay
         showOverlay={showOverlay}
         closeOverlay={toggleOverlay}

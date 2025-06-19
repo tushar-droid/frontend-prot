@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import "./maxLimitToast.css"; // We'll define styles separately
+import "./noItemsDroppedToast.css";
 
-const MaxLimitToast = ({ show, onClose }) => {
+const NoItemsDroppedToast = ({ show, onClose }) => {
   useEffect(() => {
     if (show) {
       const timer = setTimeout(onClose, 3000); // auto-close after 3s
@@ -24,9 +24,11 @@ const MaxLimitToast = ({ show, onClose }) => {
         <path d="M12 8v4" strokeWidth="2" strokeLinecap="round" />
         <circle cx="12" cy="16" r="1" fill="currentColor" />
       </svg>
-      <span className="toast-message">You can only add up to 5 elements.</span>
+      <span className="toast-message">
+        Please Drop at least 1 item to generate an image.
+      </span>
     </div>
   );
 };
 
-export default MaxLimitToast;
+export default NoItemsDroppedToast;
